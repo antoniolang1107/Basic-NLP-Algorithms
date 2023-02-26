@@ -34,28 +34,7 @@ def generate_language(automata) -> str:
     return ''.join(utterance)
 
 def recognize_language(automata, utterance) -> int:
-    chars_read = 0
-    tape_length = len(utterance)
-    valid = True
-    cur_node = automata
-
-    # while cur_node.state != "accept":
-    #     # double check length while condition
-    #     valid_chars = []
-    #     for chars in cur_node.next:
-    #         valid_chars.append(chars[0])
-    #     if utterance[chars_read] in valid_chars:
-    #         pass
-    #     chars_read += 1
-        
-
-    # while state != "accept"
-    #
-    # use a "tape step" counter
-    # compare tape step against word length
-    # if char not in automaton or chars_read==tape_length, return 0
-
-    return determine_valid_word(automata, utterance, 0)
+    return int(determine_valid_word(automata, utterance, 0))
 
 def determine_valid_word(automaton_node, utterance, chars_read):
     if automaton_node.state == "accept" and chars_read == len(utterance):
