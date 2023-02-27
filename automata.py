@@ -1,7 +1,10 @@
 # Author: Antonio Lang
-# Date: 26 February 2023
+# Date: 27 February 2023
 
 import random
+
+ones_list = ['one','two','three','four','five','six','seven','eight','nine']
+bases = ["twenty", "thirty", "forty", "fifty", "sixty", "seventy", "eighty", "ninety"]
 
 class AutomatonNode:
     def __init__(self, state, next=[("", None)]) -> None:
@@ -34,7 +37,6 @@ def create_automata(option) -> AutomatonNode:
         return q0
     if option == 3: # zero through ninety nine
         q1 = AutomatonNode("accept") # terminal accept state
-        ones_list = ['one','two','three','four','five','six','seven','eight','nine']
         spaced_ones_list = [' one',' two',' three',' four',' five',' six',' seven',' eight',' nine']
         terminal_list = [q1] * len(spaced_ones_list)
         q2 = AutomatonNode("accept", list(zip(spaced_ones_list, terminal_list))) # accept state for twenty-ninety
@@ -45,7 +47,6 @@ def create_automata(option) -> AutomatonNode:
                          'sixteen','seventeen','eighteen','nineteen']
         q1_nodes = [q1] * len(special_nums)
         q1_paths = list(zip(special_nums, q1_nodes))
-        bases = ["twenty", "thirty", "forty", "fifty", "sixty", "seventy", "eighty", "ninety"]
         q2_nodes = [q2] * len(bases)
         q2_paths = list(zip(bases, q2_nodes))
         q0 = AutomatonNode("valid", q1_paths+q2_paths)
@@ -66,13 +67,14 @@ def generate_language(automata) -> str:
 
 def recognize_language(automata, utterance) -> int:
     # wrapper function to call the recursive function and cast the output to int
+    if " " in utterance: utterance = utterance.split(" ")
+    for words in ones_list+bases+['zero','ten']: # tokenizes specific utterances
+        if utterance == words: utterance = [utterance] 
     return int(determine_valid_word(automata, utterance, 0))
 
 def determine_valid_word(automaton_node, utterance, chars_read) -> bool:
     # recursive function to check if a word exists in a given automaton's language
-
-    # consider deliminting on space for zero - ninety nine automata
-    if automaton_node is None: return False
+    if automaton_node is None: return False # end of autoamaton path
     if automaton_node.state == "accept" and chars_read == len(utterance):
         return True
     elif len(utterance) == chars_read and automaton_node.state != "accept":
@@ -80,13 +82,13 @@ def determine_valid_word(automaton_node, utterance, chars_read) -> bool:
     else:
         valid_chars = [char[0] for char in automaton_node.next]
         if utterance[chars_read] in valid_chars:
-            branch = valid_chars.index(utterance[chars_read])
+            branch = valid_chars.index(utterance[chars_read]) # finds a valid path
             return determine_valid_word(automaton_node.next[branch][1],
                                         utterance, chars_read+1)
-        else:
+        else: # no valid paths
             return False
 
 if __name__ == '__main__':
     automaton = create_automata(3)
     print(generate_language(automaton))
-    # print(recognize_language(automaton, "ten"))
+    print(recognize_language(automaton, "ten"))
