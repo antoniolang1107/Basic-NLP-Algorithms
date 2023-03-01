@@ -1,5 +1,5 @@
 # Author: Antonio Lang
-# Date: 25 February 2023
+# Date: 27 February 2023
 
 class Node():
     def __init__(self, value=0) -> None:
@@ -72,7 +72,3 @@ def calc_table(source, target, edit_table):
                 min_index = operation_costs.index(min(operation_costs))
                 edit_table[i][j].value = operation_costs[min_index]+1
                 edit_table[i][j].path = (operations[min_index], edit_table[index_list[min_index][0]][index_list[min_index][1]])
-
-if __name__ == "__main__":
-    print(calc_min_edit_dist("intention", "execution"))
-    print(align("intention", "execution"))

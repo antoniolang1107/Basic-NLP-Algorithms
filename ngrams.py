@@ -11,17 +11,6 @@ class Gram:
     def __eq__(self, __o: object) -> bool:
         return self.word == __o.word and self.history == __o.history
 
-# load_data pulled from test_script.py
-def load_data(fname):
-  data = []
-  fin = open(fname,'r')
-  for line in fin:
-    line = line.strip()
-    data.append(line)
-  fin.close()
-  return data
-
-
 def train_ngram(train_data, n):
     # returns a data structure with the ngrams and their probabilities
     
@@ -97,9 +86,3 @@ def calculate_probability(utterance, ngram_model) -> float:
         utterance_prob *= word_prob
 
     return utterance_prob
-
-if __name__ == "__main__":
-    train_data = load_data("data1.txt")
-    model = train_ngram(train_data, 2)
-    print(generate_language(model, 10))
-    print(calculate_probability("<s> Sam I am </s>", model))

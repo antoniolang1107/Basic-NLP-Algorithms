@@ -89,8 +89,3 @@ def determine_valid_word(automaton_node, utterance, chars_read) -> bool:
                                         utterance, chars_read+1)
         else: # no valid paths
             return False
-
-if __name__ == '__main__':
-    automaton = create_automata(3)
-    print(generate_language(automaton))
-    print(recognize_language(automaton, "twenty five"))
