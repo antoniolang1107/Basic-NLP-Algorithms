@@ -37,11 +37,11 @@ def train_ngram(train_data, n):
             if ngram_model.get(str(history)) is None: ngram_model[str(history)] = [word]
             else: ngram_model[str(history)].append(word)
             ngrams.append(gram_window)
-    return ngram_model
+    return ngram_model, n
 
 def generate_language(ngram_model, max_words) -> str:
     # returns an utterance generated from the ngram model
-
+    ngram_model = ngram_model[0]
     generate = True
     num_words = 1
     utterance = []
@@ -73,12 +73,28 @@ def generate_language(ngram_model, max_words) -> str:
 def calculate_probability(utterance, ngram_model) -> float:
     # returns the probability a given utterance could be 
     
+    gram_size = ngram_model[1]
+    ngram_model = ngram_model[0]
     utterance_prob = 1
     split_utterance = utterance.split()
-    tokens = [x[0] for x in ngram_model[0]]
-    probabilities = dict(zip(tokens, ngram_model[1]))
-    for index in range(1, len(split_utterance)):
-        utterance_prob *= probabilities[str(split_utterance[index])]
+
+    for key, value in ngram_model.items():
+        unique_words = list(set(value))
+        unique_probs = []
+        for unique in unique_words:
+            count = 0
+            for word in value:
+                if unique == word: count += 1
+            unique_probs.append(count / len(value))
+        ngram_model[key] = (unique_words, unique_probs)
+
+    for index in range(gram_size-1, len(split_utterance)):
+        history = split_utterance[index-gram_size+1:index]
+        word = split_utterance[index]
+        temp = ngram_model[str(history)]
+        word_index = temp[0].index(word)
+        word_prob = temp[1][word_index]
+        utterance_prob *= word_prob
 
     return utterance_prob
 
@@ -86,4 +102,4 @@ if __name__ == "__main__":
     train_data = load_data("data1.txt")
     model = train_ngram(train_data, 2)
     print(generate_language(model, 10))
-    # print(calculate_probability("<s> Sam I am </s>", model))
+    print(calculate_probability("<s> Sam I am </s>", model))
