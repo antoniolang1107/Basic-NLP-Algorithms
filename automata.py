@@ -62,7 +62,6 @@ def generate_language(automata) -> str:
         if node.next[branch][1] == None:
             break
         utterance.append(node.next[branch][0])
-        print(node)
         node = node.next[branch][1]
     return ''.join(utterance)
 
