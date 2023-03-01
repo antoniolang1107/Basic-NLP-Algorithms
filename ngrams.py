@@ -6,11 +6,8 @@ import random
 class Gram:
     def __init__(self, word, history=None) -> None:
         self.word = word
-        self.history = None if history is None else self.get_history()
+        self.history = None
         self.probability = 0
-    def get_history(self):
-        for word in range(0, len(self.history)-1):
-            self.history.append(word)
     def __eq__(self, __o: object) -> bool:
         return self.word == __o.word and self.history == __o.history
 
@@ -30,37 +27,44 @@ def train_ngram(train_data, n):
     
     ngrams = []
     split_data = []
+    ngram_model = {}
     for index, line in enumerate(train_data):
         split_data.append(line.split(" "))
         for inner_index in range(n, len(split_data[index])+1):
-            ngrams.append(split_data[index][inner_index-n:inner_index])
-    # print(ngrams)
-    n_tokens = len(ngrams)
-    unique_tokens = [list(gram) for gram in set(tuple(gram) for gram in ngrams)]
-    n_unique = len(unique_tokens)
-
-    unique_probs = []
-    for unique in unique_tokens:
-        count = 0
-        for gram in ngrams:
-            if unique == gram: count += 1
-        unique_probs.append(count/n_tokens)
-    index_start_char = unique_tokens.index(['<s>'])
-    del unique_tokens[index_start_char]
-    del unique_probs[index_start_char]
-    return unique_tokens, unique_probs
+            gram_window = (split_data[index][inner_index-n:inner_index])
+            word = gram_window[n-1]
+            history = gram_window[:n-1]
+            if ngram_model.get(str(history)) is None: ngram_model[str(history)] = [word]
+            else: ngram_model[str(history)].append(word)
+            ngrams.append(gram_window)
+    return ngram_model
 
 def generate_language(ngram_model, max_words) -> str:
     # returns an utterance generated from the ngram model
 
-    tokens = ngram_model[0]
-    weights = ngram_model[1]
     generate = True
     num_words = 1
-    utterance = ['<s>']
+    utterance = []
+    history_size = 0
+    if ngram_model.get(str([])) is not None: utterance = ['<s>']
+    else: 
+        history_keys = list(ngram_model.keys())
+        start_history = [history for history in history_keys if "['<s>'" in history]
+        gram_history = random.choice(start_history)
+        copy = gram_history # following clean 'copy' to add to utterance
+        copy = copy.replace("[","").replace("]","").replace("'","")
+        copy = copy.split(",")
+        for index, word in enumerate(copy):
+            copy[index] = copy[index].replace(" ","")
+        utterance += copy
+        utterance.append(random.choice(ngram_model[gram_history]))
+        history_size = len(start_history)
+        num_words = history_size + 1
     while generate and num_words < max_words:
+        history = utterance[num_words-history_size:num_words]
+        word = random.choice(ngram_model[str(history)])
         num_words += 1
-        word = random.choices(tokens, weights)[len(tokens[0])-1][0]
+        if word == '<s>': continue
         utterance.append(word)
         if word == "</s>": break
     if utterance[-1] != "</s>": utterance.append("</s>")
@@ -80,6 +84,6 @@ def calculate_probability(utterance, ngram_model) -> float:
 
 if __name__ == "__main__":
     train_data = load_data("data1.txt")
-    model = train_ngram(train_data, 1)
-    # print(generate_language(model, 10))
-    print(calculate_probability("<s> Sam I am </s>", model))
+    model = train_ngram(train_data, 2)
+    print(generate_language(model, 10))
+    # print(calculate_probability("<s> Sam I am </s>", model))
